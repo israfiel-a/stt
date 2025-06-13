@@ -75,8 +75,34 @@ class Chapter {
    * @param {string} contents
    */
   constructor(contents) {
-    this.body = contents.split('\n');
+    this.body = contents.split('\n').filter((v) => v != '\n' && v != '');
     this.title = this.body.splice(0, 1)[0];
+
+    for (let i = 0; i < this.body.length; i++) {
+      const paragraph = this.body[i];
+
+      let italic = false;
+
+      let digestedParagraph = '';
+      for (const letter of paragraph) {
+        switch (letter) {
+          case '_':
+            if (!italic)
+              digestedParagraph += '<i>';
+            else
+              digestedParagraph += '</i>';
+            italic = !italic;
+            break;
+          case '+':
+            digestedParagraph +=
+                '<p align="center" style="font-size: x-large;letter-spacing: 1em;">···</p>';
+            break;
+          default:
+            digestedParagraph += letter;
+        }
+      }
+      this.body[i] = digestedParagraph;
+    }
   }
 }
 
@@ -96,7 +122,7 @@ class Part {
    */
   chapters;
 
-  #currentChapter = -1;
+  currentChapter = -1;
 
   static LENGTH = 16;
 
@@ -116,10 +142,11 @@ class Part {
 
   /**
    *
-   * @returns {[Chapter, number]}
+   * @returns {Chapter}
    */
   getCurrentChapter() {
-    return [this.chapters[++this.#currentChapter], this.#currentChapter];
+    return this.chapters[this.currentChapter];
+    ;
   }
 }
 
@@ -138,7 +165,7 @@ class Book {
    */
   parts = [];
 
-  #currentPart = -1;
+  currentPart = -1;
 
   static LENGTH = 6;
 
@@ -159,10 +186,10 @@ class Book {
 
   /**
    *
-   * @returns {[Part, number]}
+   * @returns {Part}
    */
   getCurrentPart() {
-    return [this.parts[++this.#currentPart], this.#currentPart];
+    return this.parts[this.currentPart];
   }
 }
 
@@ -182,7 +209,7 @@ class Series {
 
   static LENGTH = 5;
 
-  static #currentBook = -1;
+  static currentBook = -1;
 
   constructor() {
     throw new Error('This is a static class.');
@@ -190,10 +217,10 @@ class Series {
 
   /**
    *
-   * @returns {[Book, number]}
+   * @returns {Book}
    */
   static getCurrentBook() {
-    return [this.books[++this.#currentBook], this.#currentBook];
+    return this.books[this.currentBook];
   }
 
   /**
@@ -230,36 +257,73 @@ class Series {
 
       this.books.push(new Book(await this.#loadBook(i)));
       // Display the first book once loaded.
-      if (i == 1) Series.display();
+      if (i == 1) Series.display(document.getElementsByTagName('main').item(0));
     }
   }
 
-  static display() {
-    document.body.innerHTML = '';
+  /**
+   *
+   * @param {HTMLElement} display
+   * @returns
+   */
+  static display(display, bookJump = 0, partJump = 0, chapterJump = 1) {
+    display.innerHTML = '';
+
+    if (this.currentBook == -1) {
+      const title = document.createElement('div');
+      const header = document.createElement('h2');
+      header.innerText = 'The Surface Tension Trilogy';
+      title.appendChild(header);
+
+      const subheader = document.createElement('h4');
+      subheader.innerText = 'The Beginning of All';
+      title.appendChild(subheader);
+
+      const author = document.createElement('p');
+      author.innerText = 'Israfil Argos';
+      title.appendChild(author);
+
+      display.appendChild(title);
+      this.currentBook++;
+      return;
+    }
 
     const currentBook = this.getCurrentBook();
-    const currentPart = currentBook[0].getCurrentPart();
-    const currentChapter = currentPart[0].getCurrentChapter();
+    const currentPart = currentBook.getCurrentPart();
+    const currentChapter = currentPart.getCurrentChapter();
 
     const header = document.createElement('h2');
-    header.innerText = 'Chapter ' + numberToText(currentChapter[1] + 1) + ': ' +
-        currentChapter[0].title;
-    document.body.appendChild(header);
+    header.innerText = 'Chapter ' +
+        numberToText(currentPart.currentChapter + 1) + ': ' +
+        currentChapter.title;
+    display.appendChild(header);
 
     const subheader = document.createElement('h4');
-    subheader.innerHTML = 'Book ' + numberToText(currentBook[1] + 1) + ': ' +
-        currentBook[0].title[0] + ' | Part ' +
-        numberToText(currentPart[1] + 1) + ': ' + currentPart[0].title;
-    document.body.appendChild(subheader);
+    subheader.innerHTML = 'Book ' + numberToText(this.currentBook + 1) + ': ' +
+        currentBook.title[0] + ' | Part ' +
+        numberToText(currentBook.currentPart + 1) + ': ' + currentPart.title;
+    display.appendChild(subheader);
 
-    for (const paragraph of currentChapter[0].body) {
+    for (const paragraph of currentChapter.body) {
       const paragraphElement = document.createElement('p');
       paragraphElement.innerHTML = paragraph;
-      document.body.appendChild(paragraphElement);
+      display.appendChild(paragraphElement);
     }
+
+    currentPart.currentChapter += chapterJump;
+    currentBook.currentPart += partJump;
+    this.currentBook += bookJump;
   }
 }
 
 window.onload = () => {
+  document.addEventListener('keyup', (e) => {
+    if (e.key == 'ArrowUp')
+      document.body.children.item(0).style.display = 'none';
+    if (e.key == 'ArrowDown')
+      document.body.children.item(0).style.display = 'initial';
+    if (e.key == 'ArrowLeft') Series.display(document.body.children.item(1));
+    if (e.key == 'ArrowRight') Series.display(document.body.children.item(1));
+  });
   Series.load();
 }
