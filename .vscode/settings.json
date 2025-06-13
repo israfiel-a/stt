@@ -43,5 +43,15 @@
         "Tisrei",
         "Zariel"
     ],
-    "explorer.sortOrder": "mixed"
+    "explorer.sortOrder": "mixed",
+    "window.commandCenter": false,
+    "window.title": "${folderName}",
+    "window.titleSeparator": "",
+    "telemetry.feedback.enabled": false,
+    "editor.formatOnSave": true,
+    "editor.find.addExtraSpaceOnTop": false,
+    "workbench.statusBar.visible": true,
+    "explorer.fileNesting.patterns": {
+        "*.md": "${capture}.notes.md"
+    }
 }
