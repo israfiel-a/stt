@@ -108,45 +108,25 @@ class Chapter {
 
 class Part {
   /**
-   * @type {string}
-   * @constant
+   * @type {Chapter}
    */
-  title;
-  /**
-   * @type {string}
-   */
-  quote;
+  hook;
   /**
    * @type {Chapter[]}
    * @constant
    */
   chapters;
 
-  currentChapter = -1;
-
-  static LENGTH = 16;
+  static LENGTH = 17;
 
   /**
    *
    * @param {string[]} content
    */
   constructor(content) {
-    const prologue = content.splice(0, 1)[0];
-    const titleEnd = prologue.indexOf('\n');
-    this.title = prologue.substring(0, titleEnd);
-    this.quote = prologue.substring(titleEnd);
-
+    this.hook = new Chapter(content.splice(0, 1)[0]);
     this.chapters = [];
     for (const input of content) this.chapters.push(new Chapter(input));
-  }
-
-  /**
-   *
-   * @returns {Chapter}
-   */
-  getCurrentChapter() {
-    return this.chapters[this.currentChapter];
-    ;
   }
 }
 
@@ -157,15 +137,13 @@ class Book {
   //@ts-ignore
   title = [];
   /**
-   * @type {[string, string]}
+   * @type {[Chapter, Chapter]}
    */
   exposition;
   /**
    * @type {Part[]}
    */
   parts = [];
-
-  currentPart = -1;
 
   static LENGTH = 6;
 
@@ -174,22 +152,15 @@ class Book {
    * @param {string[][]} contents
    */
   constructor(contents) {
-    const prelude = contents.splice(0, 1)[0][0];
+    let prelude = contents.splice(0, 1)[0][0];
     const titleEnd = prelude.indexOf('\n');
     this.title[0] = prelude.substring(0, titleEnd);
+    prelude = prelude.substring(titleEnd);
     //@ts-ignore
-    this.title = this.title[0].split(':');
-    this.exposition = [prelude.substring(titleEnd), contents.pop()[0]];
+    this.title = this.title[0].split(': ');
+    this.exposition = [new Chapter(prelude), new Chapter(contents.pop()[0])];
 
     for (const part of contents) this.parts.push(new Part(part));
-  }
-
-  /**
-   *
-   * @returns {Part}
-   */
-  getCurrentPart() {
-    return this.parts[this.currentPart];
   }
 }
 
@@ -198,7 +169,7 @@ class Book {
  */
 class Series {
   /**
-   * @type {[[string, string], [string, string]]}
+   * @type {[Chapter, Chapter]}
    */
   //@ts-ignore
   static exposition = [];
@@ -209,7 +180,7 @@ class Series {
 
   static LENGTH = 5;
 
-  static currentBook = -1;
+  static current = [-1, 0, 0];
 
   constructor() {
     throw new Error('This is a static class.');
@@ -217,10 +188,37 @@ class Series {
 
   /**
    *
-   * @returns {Book}
+   * @returns {Book|Chapter}
    */
   static getCurrentBook() {
-    return this.books[this.currentBook];
+    if (this.current[0] == 0) return this.exposition[0];
+    if (this.current[0] == Series.LENGTH - 1) return this.exposition[1];
+    return this.books[this.current[0] - 1];
+  }
+
+  /**
+   *
+   * @returns {Part | Chapter}
+   */
+  static getCurrentPart() {
+    const book = this.getCurrentBook();
+    if (book instanceof Chapter) return book;
+
+    if (this.current[1] == 0) return book.exposition[0];
+    if (this.current[1] == Book.LENGTH - 1) return book.exposition[1];
+    return book.parts[this.current[1] - 1];
+  }
+
+  /**
+   *
+   * @returns {Chapter}
+   */
+  static getCurrentChapter() {
+    const part = this.getCurrentPart();
+    if (part instanceof Chapter) return part;
+
+    if (this.current[2] == 0) return part.hook;
+    return part.chapters[this.current[2] - 1];
   }
 
   /**
@@ -249,15 +247,14 @@ class Series {
     for (let i = 0; i < Series.LENGTH; i++) {
       if (i == 0 || i == Series.LENGTH - 1) {
         const text = await loadFileText('Series/' + i + '.md');
-        const titleEnd = text.indexOf('\n');
-        this.exposition.push(
-            [text.substring(0, titleEnd), text.substring(titleEnd)]);
+        this.exposition.push(new Chapter(text));
+        // Display the beginning once loaded.
+        if (i == 0)
+          Series.display(document.getElementsByTagName('main').item(0));
         continue;
       }
 
       this.books.push(new Book(await this.#loadBook(i)));
-      // Display the first book once loaded.
-      if (i == 1) Series.display(document.getElementsByTagName('main').item(0));
     }
   }
 
@@ -266,53 +263,281 @@ class Series {
    * @param {HTMLElement} display
    * @returns
    */
-  static display(display, bookJump = 0, partJump = 0, chapterJump = 1) {
+  static display(display, direction = true) {
     display.innerHTML = '';
 
-    if (this.currentBook == -1) {
-      const title = document.createElement('div');
+    if (direction) {
+      // Display the title page if we're supposed to be displaying that.
+      if (this.current[0] == -1) {
+        const title = document.createElement('div');
+        const header = document.createElement('h2');
+        header.innerText = 'The Surface Tension Trilogy';
+        title.appendChild(header);
+
+        const subheader = document.createElement('h4');
+        subheader.innerText = 'Heaven Torn Asunder';
+        title.appendChild(subheader);
+
+        const author = document.createElement('p');
+        author.innerText = 'Israfil Argos';
+        title.appendChild(author);
+
+        display.appendChild(title);
+        this.current[0]++;
+        return;
+      }
+
+      if (this.current[0] == 0 || this.current[0] == Series.LENGTH - 1) {
+        const header = document.createElement('h2');
+        let isPrelude = this.current[0] == 0;
+        const text = (isPrelude ? this.exposition[0] : this.exposition[1]);
+        header.innerText = (isPrelude ? 'Prelude' : 'Postlude') +
+            ' to the Surface Tension Trilogy';
+        display.appendChild(header);
+
+        const subheader = document.createElement('h4');
+        subheader.innerHTML = text.title;
+        display.appendChild(subheader);
+
+        for (const paragraph of text.body) {
+          const paragraphElement = document.createElement('p');
+          paragraphElement.innerHTML = paragraph;
+          display.appendChild(paragraphElement);
+        }
+
+        if (isPrelude) this.current[0]++;
+        return;
+      }
+
+      if (this.current[1] == 0 || this.current[1] == Book.LENGTH - 1) {
+        const header = document.createElement('h2');
+
+        const isPrologue = this.current[1] == 0;
+        /**
+         * @type {Chapter}
+         */
+        // @ts-ignore
+        const text = this.getCurrentPart();
+        header.innerText = (isPrologue ? 'Prologue' : 'Epilogue') + ' to ' +
+            this.getCurrentBook().title[0];
+        display.appendChild(header);
+
+        const subheader = document.createElement('h4');
+        subheader.innerHTML = text.title;
+        display.appendChild(subheader);
+
+        for (const paragraph of text.body) {
+          const paragraphElement = document.createElement('p');
+          paragraphElement.innerHTML = paragraph;
+          display.appendChild(paragraphElement);
+        }
+
+        if (isPrologue)
+          this.current[1]++;
+        else {
+          this.current[1] = 0;
+          this.current[0]++;
+        }
+        return;
+      }
+
+      if (this.current[2] == 0) {
+        const header = document.createElement('h2');
+        const text = this.getCurrentChapter();
+        header.innerText = 'Part ' + numberToText(this.current[1]) + ' of ' +
+            this.getCurrentBook().title[0];
+        display.appendChild(header);
+
+        const subheader = document.createElement('h4');
+        subheader.innerHTML = text.title;
+        display.appendChild(subheader);
+
+        for (const paragraph of text.body) {
+          const paragraphElement = document.createElement('p');
+          paragraphElement.innerHTML = paragraph;
+          display.appendChild(paragraphElement);
+        }
+
+        this.current[2]++;
+        return;
+      }
+
+      const text = this.getCurrentChapter();
       const header = document.createElement('h2');
-      header.innerText = 'The Surface Tension Trilogy';
-      title.appendChild(header);
+      header.innerText =
+          'Chapter ' + numberToText(this.current[2]) + ': ' + text.title;
+      display.appendChild(header);
 
       const subheader = document.createElement('h4');
-      subheader.innerText = 'The Beginning of All';
-      title.appendChild(subheader);
+      subheader.innerHTML = 'Book ' + numberToText(this.current[0]) + ': ' +
+          this.getCurrentBook().title[0] + ' | Part ' +
+          numberToText(this.current[1]) + ': ' +
+          //@ts-ignore
+          this.getCurrentPart().hook.title;
+      display.appendChild(subheader);
 
-      const author = document.createElement('p');
-      author.innerText = 'Israfil Argos';
-      title.appendChild(author);
+      for (const paragraph of text.body) {
+        const paragraphElement = document.createElement('p');
+        paragraphElement.innerHTML = paragraph;
+        display.appendChild(paragraphElement);
+      }
 
-      display.appendChild(title);
-      this.currentBook++;
-      return;
+      if (this.current[2]++ == Part.LENGTH - 1) {
+        this.current[2] = 0;
+        if (this.current[1]++ == Book.LENGTH - 1) {
+          this.current[1] = 0;
+          if (this.current[0]++ == Series.LENGTH - 1)
+            this.current[0] = Series.LENGTH - 1;
+        }
+      }
     }
 
-    const currentBook = this.getCurrentBook();
-    const currentPart = currentBook.getCurrentPart();
-    const currentChapter = currentPart.getCurrentChapter();
+    // const text = this.getCurrentChapter();
+    // if (this.current[0] == 0 || this.current[0] == Series.LENGTH) {
+    //   const header = document.createElement('h2');
+    //   header.innerText = (this.current[0] == 0 ? 'Prelude' : 'Postlude') +
+    //       ' to the Surface Tension Trilogy';
+    //   display.appendChild(header);
 
-    const header = document.createElement('h2');
-    header.innerText = 'Chapter ' +
-        numberToText(currentPart.currentChapter + 1) + ': ' +
-        currentChapter.title;
-    display.appendChild(header);
+    //   const subheader = document.createElement('h4');
+    //   subheader.innerHTML = text.title;
+    //   display.appendChild(subheader);
 
-    const subheader = document.createElement('h4');
-    subheader.innerHTML = 'Book ' + numberToText(this.currentBook + 1) + ': ' +
-        currentBook.title[0] + ' | Part ' +
-        numberToText(currentBook.currentPart + 1) + ': ' + currentPart.title;
-    display.appendChild(subheader);
+    //   for (const paragraph of text.body) {
+    //     const paragraphElement = document.createElement('p');
+    //     paragraphElement.innerHTML = paragraph;
+    //     display.appendChild(paragraphElement);
+    //   }
+    //   return;
+    // }
 
-    for (const paragraph of currentChapter.body) {
-      const paragraphElement = document.createElement('p');
-      paragraphElement.innerHTML = paragraph;
-      display.appendChild(paragraphElement);
-    }
+    // if (this.current[1] == 0 || this.current[1] == Book.LENGTH) {
+    //   const header = document.createElement('h2');
+    //   header.innerText = (this.current[1] == 0 ? 'Prologue' : 'Epilogue') +
+    //       ' to ' + this.books[this.current[0] - 1].title[0];
+    //   display.appendChild(header);
 
-    currentPart.currentChapter += chapterJump;
-    currentBook.currentPart += partJump;
-    this.currentBook += bookJump;
+    //   const subheader = document.createElement('h4');
+    //   subheader.innerHTML = text.title;
+    //   display.appendChild(subheader);
+
+    //   for (const paragraph of text.body) {
+    //     const paragraphElement = document.createElement('p');
+    //     paragraphElement.innerHTML = paragraph;
+    //     display.appendChild(paragraphElement);
+    //   }
+    //   return;
+    // }
+
+    // const currentPart = currentBook.getCurrentPart();
+    // if (currentPart instanceof Chapter) {
+    //   const header = document.createElement('h2');
+    //   header.innerText =
+    //       (currentPart == currentBook.exposition[0] ? 'Prologue' :
+    //       'Epilogue') + ' to ' + currentBook.title[0];
+    //   display.appendChild(header);
+
+    //   const subheader = document.createElement('h4');
+    //   subheader.innerHTML = currentPart.title;
+    //   display.appendChild(subheader);
+
+    //   for (const paragraph of currentPart.body) {
+    //     const paragraphElement = document.createElement('p');
+    //     paragraphElement.innerHTML = paragraph;
+    //     display.appendChild(paragraphElement);
+    //   }
+
+    //   if (direction && != Series.LENGTH)
+    //     this.currentBook++;
+    //   else if (this.currentBook != Series.LENGTH)
+    //     this.currentBook--;
+    //   return;
+    // }
+
+    // if (this.currentBook == -1) {
+    //   const title = document.createElement('div');
+    //   const header = document.createElement('h2');
+    //   header.innerText = 'The Surface Tension Trilogy';
+    //   title.appendChild(header);
+
+    //   const subheader = document.createElement('h4');
+    //   subheader.innerText = 'Heaven Torn Asunder';
+    //   title.appendChild(subheader);
+
+    //   const author = document.createElement('p');
+    //   author.innerText = 'Israfil Argos';
+    //   title.appendChild(author);
+
+    //   display.appendChild(title);
+    //   if (direction) this.currentBook++;
+    //   return;
+    // }
+
+    // if (this.currentBook == 0) {
+    //   const header = document.createElement('h2');
+    //   header.innerText = 'Prelude to the Surface Tension Trilogy';
+    //   display.appendChild(header);
+
+    //   const subheader = document.createElement('h4');
+    //   subheader.innerHTML = this.exposition[0].title;
+    //   display.appendChild(subheader);
+
+    //   for (const paragraph of this.exposition[0].body) {
+    //     const paragraphElement = document.createElement('p');
+    //     paragraphElement.innerHTML = paragraph;
+    //     display.appendChild(paragraphElement);
+    //   }
+
+    //   if (direction)
+    //     this.currentBook++;
+    //   else
+    //     this.currentBook--;
+    //   return;
+    // }
+
+    // if (this.currentBook == Series.LENGTH) {
+    //   if (!direction) this.currentBook--;
+    //   return;
+    // }
+
+    // const currentBook = this.getCurrentBook();
+    // if (Array.isArray(currentBook)) {
+    //   const header = document.createElement('h2');
+    //   header.innerText = 'Prelude to the Surface Tension Trilogy';
+    //   display.appendChild(header);
+
+    //   const subheader = document.createElement('h4');
+    //   subheader.innerHTML = 'Book ' + numberToText(this.currentBook + 1) +
+    //       ': ' + currentBook.title[0] + ' | Part ' +
+    //       numberToText(currentBook.currentPart + 1) + ': ' +
+    //       currentPart.title;
+    //   display.appendChild(subheader);
+    //   this.currentBook += bookJump;
+    //   this.books[this.currentBook].currentPart += partJump;
+    //   return;
+    // }
+
+    // const currentPart = currentBook.getCurrentPart();
+    // const currentChapter = currentPart.getCurrentChapter();
+
+    // const header = document.createElement('h2');
+    // header.innerText = 'Chapter ' +
+    //     numberToText(currentPart.currentChapter + 1) + ': ' +
+    //     currentChapter.title;
+    // display.appendChild(header);
+
+    // const subheader = document.createElement('h4');
+    // subheader.innerHTML = 'Book ' + numberToText(this.currentBook + 1) + ': '
+    // +
+    //     currentBook.title[0] + ' | Part ' +
+    //     numberToText(currentBook.currentPart + 1) + ': ' + currentPart.title;
+    // display.appendChild(subheader);
+
+    // for (const paragraph of currentChapter.body) {
+    //   const paragraphElement = document.createElement('p');
+    //   paragraphElement.innerHTML = paragraph;
+    //   display.appendChild(paragraphElement);
+    // }
   }
 }
 
@@ -322,7 +547,8 @@ window.onload = () => {
       document.body.children.item(0).style.display = 'none';
     if (e.key == 'ArrowDown')
       document.body.children.item(0).style.display = 'initial';
-    if (e.key == 'ArrowLeft') Series.display(document.body.children.item(1));
+    if (e.key == 'ArrowLeft')
+      Series.display(document.body.children.item(1), false);
     if (e.key == 'ArrowRight') Series.display(document.body.children.item(1));
   });
   Series.load();
