@@ -28,7 +28,7 @@ A sort of "family tree" is listed below, starting from Ashantin and continuing.
                 - Israphel:
                 - Nehandrah:
                 - Nammael:
-                - Cassial:
+                - Cassiel:
                 - Adriel:
             - Konah:
                 - Akhan:
