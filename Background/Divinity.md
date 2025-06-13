@@ -8,6 +8,7 @@ In the split, it has become apparent that Divinity has several distinct properti
 - Position: All things have a where and a what.
 - Growth: The power can grow and change.
 - Preservation: The power seeks to preserve that which it sees as important.
+- Order: The power likes order and organization.
 - Peace: The power seeks to, at the end of it all, be peaceful.
 - Freedom: The power seeks freedom from boundaries it sees as unjust.
 - Ambition: The power seeks to attain its goals.
@@ -20,15 +21,28 @@ While most pieces of Divinity are not aware, some are, and these creatures have 
 A sort of "family tree" is listed below, starting from Ashantin and continuing.
 
 - Ashantin: The Creator. He was the first to split Divinity into more than a couple of pieces, and began His great experiment.
-    - Morael: The oldest amongst the Deepest Ones. He takes the form of a massive eel-creature, with eyes that glow bright yellow. He is widely considered the leader amongst the Deepest Ones.
-    - Ibrahin: The largest physically among the Deepest Ones, though this is a voluntarily kept title due to all conscious pieces of Divinity being able to change into whatever shape they wish. He is manifest as a huge black snake, with eyes that glow bright green. He was direly wounded by the Serpentslayer, a third-generation pieces of Divinity.
+    - Morael: The oldest amongst the Deepest Ones. He takes the form of a massive eel-creature, with eyes that glow bright yellow. He is widely considered the leader amongst the Deepest Ones. He is also the only one to have "had children."
+        - Zariel:
+            - Ithuriel:
+                - Ishikh:
+                - Israphel:
+                - Nehandrah:
+                - Nammael:
+                - Cassial:
+                - Adriel:
+            - Konah:
+                - Akhan:
+                - Thiyan:
+                - Iaoth:
+                - Izrail:
+                - Sorath:
+                - Remiel:
+        - Amitiel:
+            - Dismael:
+            - Abbas:
+        - Lekan:
+        - Miel:
+    - Ibrahin: The largest physically among the Deepest Ones, though this is a voluntarily kept title due to all conscious pieces of Divinity being able to change into whatever shape they wish. He is manifest as a huge black snake, with eyes that glow bright green. He was direly wounded by the Serpentslayer, a fourth-generation pieces of Divinity.
     - Asmael: Usually manifest as a half-fish-half-man figure, Asmael typically takes the role of advisor amongst the Deepest Ones.
     - Tisrei: Usually manifest as a nondescript but large fish, Tisrei is arguably the greatest shapeshifter amongst the whole of Divinity; while it often takes extreme effort for others, he is able to do it in a fluid motion. 
-    - Eshikel: 
-    - Lekan:
-    - Miel:
-    - Nammael:
-    - Abbas:
-    - Dismael:
-    - Maren:
-    - Camiel:
+    - Eshikel:
