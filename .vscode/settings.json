@@ -6,14 +6,17 @@
         "Amitiel",
         "Ashantín",
         "Asmael",
+        "Bloodletter",
         "BLOODSIN",
         "Camiel",
         "Cassiel",
+        "Chainbinder",
         "Culiph",
         "Dismael",
         "Elathm",
         "Eshikel",
         "Fenhelam",
+        "Godslayer",
         "Highlord",
         "Iaoth",
         "Ibrahin",
@@ -64,6 +67,7 @@
         "**/.git": false,
         "**/.hg": false,
         "**/.svn": false,
-        "**/Thumbs.db": false
+        "**/Thumbs.db": false,
+        "jsconfig.json": true
     }
 }

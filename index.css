@@ -1,0 +1,16 @@
+body {
+    width: calc(100vw - 12%);
+    height: calc(100vh - 6%);
+    padding: 3%;
+    padding-left: 6%;
+    padding-right: 6%;
+    margin: 0;
+
+    p,
+    h1,
+    h2,
+    h3 {
+        margin: 0;
+        padding: 0;
+    }
+}
