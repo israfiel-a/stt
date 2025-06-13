@@ -32,11 +32,13 @@
         "Nammael",
         "Nehandrah",
         "Remiel",
+        "sabatons",
         "Serpentslayer",
         "shapeshifter",
         "Sorath",
         "spikefruit",
         "spikeweed",
+        "stormclouds",
         "Tekna'li",
         "Teyuri",
         "Thiyan",
@@ -53,5 +55,15 @@
     "workbench.statusBar.visible": true,
     "explorer.fileNesting.patterns": {
         "*.md": "${capture}.notes.md"
+    },
+    "files.exclude": {
+        ".git": true,
+        ".gitignore": true,
+        ".vscode": true,
+        "**/.DS_Store": false,
+        "**/.git": false,
+        "**/.hg": false,
+        "**/.svn": false,
+        "**/Thumbs.db": false
     }
 }
