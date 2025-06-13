@@ -4,6 +4,82 @@ async function loadFileText(name) {
   return await (await fetch(name)).text();
 }
 
+// credit https://stackoverflow.com/a/5530230/28813012
+var ones = [
+  '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'
+];
+var tens = [
+  '', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty',
+  'Ninety'
+];
+var teens = [
+  'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+  'Seventeen', 'Eighteen', 'Nineteen'
+];
+
+function convert_millions(num) {
+  if (num >= 1000000) {
+    return convert_millions(Math.floor(num / 1000000)) + ' Million ' +
+        convert_thousands(num % 1000000);
+  } else {
+    return convert_thousands(num);
+  }
+}
+
+function convert_thousands(num) {
+  if (num >= 1000) {
+    return convert_hundreds(Math.floor(num / 1000)) + ' Thousand ' +
+        convert_hundreds(num % 1000);
+  } else {
+    return convert_hundreds(num);
+  }
+}
+
+function convert_hundreds(num) {
+  if (num > 99) {
+    return ones[Math.floor(num / 100)] + ' Hundred ' + convert_tens(num % 100);
+  } else {
+    return convert_tens(num);
+  }
+}
+
+function convert_tens(num) {
+  if (num < 10)
+    return ones[num];
+  else if (num >= 10 && num < 20)
+    return teens[num - 10];
+  else {
+    return tens[Math.floor(num / 10)] + ' ' + ones[num % 10];
+  }
+}
+
+function numberToText(num) {
+  if (num == 0)
+    return 'Zero';
+  else
+    return convert_millions(num);
+}
+
+class Chapter {
+  /**
+   * @type {string}
+   */
+  title;
+  /**
+   * @type {string[]}
+   */
+  body;
+
+  /**
+   *
+   * @param {string} contents
+   */
+  constructor(contents) {
+    this.body = contents.split('\n');
+    this.title = this.body.splice(0, 1)[0];
+  }
+}
+
 class Part {
   /**
    * @type {string}
@@ -15,10 +91,12 @@ class Part {
    */
   quote;
   /**
-   * @type {{title:string, body:string}[]}
+   * @type {Chapter[]}
    * @constant
    */
-  body;
+  chapters;
+
+  #currentChapter = -1;
 
   static LENGTH = 16;
 
@@ -32,22 +110,25 @@ class Part {
     this.title = prologue.substring(0, titleEnd);
     this.quote = prologue.substring(titleEnd);
 
-    this.body = [];
-    for (const input of content) {
-      const titleEnd = input.indexOf('\n');
-      this.body.push({
-        title: input.substring(0, titleEnd),
-        body: input.substring(titleEnd)
-      });
-    }
+    this.chapters = [];
+    for (const input of content) this.chapters.push(new Chapter(input));
+  }
+
+  /**
+   *
+   * @returns {[Chapter, number]}
+   */
+  getCurrentChapter() {
+    return [this.chapters[++this.#currentChapter], this.#currentChapter];
   }
 }
 
 class Book {
   /**
-   * @type {string}
+   * @type {[string, string]}
    */
-  title = null;
+  //@ts-ignore
+  title = [];
   /**
    * @type {[string, string]}
    */
@@ -56,6 +137,8 @@ class Book {
    * @type {Part[]}
    */
   parts = [];
+
+  #currentPart = -1;
 
   static LENGTH = 6;
 
@@ -66,10 +149,20 @@ class Book {
   constructor(contents) {
     const prelude = contents.splice(0, 1)[0][0];
     const titleEnd = prelude.indexOf('\n');
-    this.title = prelude.substring(0, titleEnd);
+    this.title[0] = prelude.substring(0, titleEnd);
+    //@ts-ignore
+    this.title = this.title[0].split(':');
     this.exposition = [prelude.substring(titleEnd), contents.pop()[0]];
 
     for (const part of contents) this.parts.push(new Part(part));
+  }
+
+  /**
+   *
+   * @returns {[Part, number]}
+   */
+  getCurrentPart() {
+    return [this.parts[++this.#currentPart], this.#currentPart];
   }
 }
 
@@ -87,13 +180,20 @@ class Series {
    */
   static books = [];
 
-  // book, part, chapter
-  static current = [0, 0, 0];
-
   static LENGTH = 5;
+
+  static #currentBook = -1;
 
   constructor() {
     throw new Error('This is a static class.');
+  }
+
+  /**
+   *
+   * @returns {[Book, number]}
+   */
+  static getCurrentBook() {
+    return [this.books[++this.#currentBook], this.#currentBook];
   }
 
   /**
@@ -127,26 +227,39 @@ class Series {
             [text.substring(0, titleEnd), text.substring(titleEnd)]);
         continue;
       }
+
       this.books.push(new Book(await this.#loadBook(i)));
+      // Display the first book once loaded.
+      if (i == 1) Series.display();
     }
   }
 
   static display() {
-    document.body.children.item(0).innerHTML = this.books[this.current[0]]
-                                                   .parts[this.current[1]]
-                                                   .body[this.current[2]]
-                                                   .title;
-    document.body.children.item(1).innerHTML =
-        this.books[this.current[0]].title + ' &mdash; ' +
-        this.books[this.current[0]].parts[this.current[1]].title;
-    document.body.children.item(3).innerHTML = this.books[this.current[0]]
-                                                   .parts[this.current[1]]
-                                                   .body[this.current[2]]
-                                                   .body;
+    document.body.innerHTML = '';
+
+    const currentBook = this.getCurrentBook();
+    const currentPart = currentBook[0].getCurrentPart();
+    const currentChapter = currentPart[0].getCurrentChapter();
+
+    const header = document.createElement('h2');
+    header.innerText = 'Chapter ' + numberToText(currentChapter[1] + 1) + ': ' +
+        currentChapter[0].title;
+    document.body.appendChild(header);
+
+    const subheader = document.createElement('h4');
+    subheader.innerHTML = 'Book ' + numberToText(currentBook[1] + 1) + ': ' +
+        currentBook[0].title[0] + ' | Part ' +
+        numberToText(currentPart[1] + 1) + ': ' + currentPart[0].title;
+    document.body.appendChild(subheader);
+
+    for (const paragraph of currentChapter[0].body) {
+      const paragraphElement = document.createElement('p');
+      paragraphElement.innerHTML = paragraph;
+      document.body.appendChild(paragraphElement);
+    }
   }
 }
 
-window.onload = async () => {
-  await Series.load();
-  Series.display();
+window.onload = () => {
+  Series.load();
 }
