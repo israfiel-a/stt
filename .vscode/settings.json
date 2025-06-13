@@ -6,6 +6,7 @@
         "Amitiel",
         "Ashantín",
         "Asmael",
+        "BLOODSIN",
         "Camiel",
         "Cassiel",
         "Culiph",
@@ -41,5 +42,6 @@
         "Thiyan",
         "Tisrei",
         "Zariel"
-    ]
+    ],
+    "explorer.sortOrder": "mixed"
 }
