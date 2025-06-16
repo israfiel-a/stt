@@ -1,0 +1,1 @@
+planet rotates a dwarf star, "eyeball planet", two small moons
