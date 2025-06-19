@@ -95,7 +95,7 @@ class Chapter {
             break;
           case '+':
             digestedParagraph +=
-                '<p align="center" style="font-size: x-large;letter-spacing: 1em;">···</p>';
+                '<p align="center" style="font-size: x-large;">···</p>';
             break;
           default:
             digestedParagraph += letter;
@@ -265,6 +265,8 @@ class Series {
    */
   static display(display, direction = true) {
     display.innerHTML = '';
+    display.style.display = 'initial';
+    display.style.textAlign = 'initial';
 
     if (direction) {
       // Display the title page if we're supposed to be displaying that.
@@ -357,6 +359,12 @@ class Series {
           paragraphElement.innerHTML = paragraph;
           display.appendChild(paragraphElement);
         }
+
+        display.style.justifyContent = 'center';
+        display.style.alignItems = 'center';
+        display.style.display = 'flex';
+        display.style.flexDirection = 'column';
+        display.style.textAlign = 'center';
 
         this.current[2]++;
         return;
