@@ -23,11 +23,11 @@ A sort of "family tree" is listed below, starting from Ashantin and continuing.
 - Ashantin: The Creator. He was the first to split Divinity into more than a couple of pieces, and began His great experiment.
     - Morael: The oldest amongst the Deepest Ones. He takes the form of a massive eel-creature, with eyes that glow bright yellow. He is widely considered the leader amongst the Deepest Ones. He is also the only one to have "had children."
         - Zariel:
-            - Ithuriel:
+            - Nammael:
                 - Ishikh:
                 - Israphel:
                 - Nehandrah:
-                - Nammael:
+                - Ithuriel:
                 - Cassiel:
                 - Adriel:
             - Konah:
