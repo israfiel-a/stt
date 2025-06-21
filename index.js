@@ -412,12 +412,12 @@ window.onload = () => {
       Series.display(document.body.children.item(1), false);
     if (e.key == 'ArrowRight') Series.display(document.body.children.item(1));
   });
+
   document.addEventListener('touchstart', (e) => {
-    for (let i = 0; i < e.touches.length; i++)
-      if (e.touches.item(i).clientX >= window.innerWidth * 0.66) {
-        Series.display(document.body.children.item(1));
-      } else if (e.touches.item(i).clientX <= window.innerWidth * 0.33)
-        Series.display(document.body.children.item(1), false);
+    if (e.touches.item(0).clientX >= window.innerWidth * 0.75) {
+      Series.display(document.body.children.item(1));
+    } else if (e.touches.item(0).clientX <= window.innerWidth * 0.25)
+      Series.display(document.body.children.item(1), false);
   });
   Series.load();
 }
