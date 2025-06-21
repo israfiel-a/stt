@@ -399,153 +399,6 @@ class Series {
         }
       }
     }
-
-    // const text = this.getCurrentChapter();
-    // if (this.current[0] == 0 || this.current[0] == Series.LENGTH) {
-    //   const header = document.createElement('h2');
-    //   header.innerText = (this.current[0] == 0 ? 'Prelude' : 'Postlude') +
-    //       ' to the Surface Tension Trilogy';
-    //   display.appendChild(header);
-
-    //   const subheader = document.createElement('h4');
-    //   subheader.innerHTML = text.title;
-    //   display.appendChild(subheader);
-
-    //   for (const paragraph of text.body) {
-    //     const paragraphElement = document.createElement('p');
-    //     paragraphElement.innerHTML = paragraph;
-    //     display.appendChild(paragraphElement);
-    //   }
-    //   return;
-    // }
-
-    // if (this.current[1] == 0 || this.current[1] == Book.LENGTH) {
-    //   const header = document.createElement('h2');
-    //   header.innerText = (this.current[1] == 0 ? 'Prologue' : 'Epilogue') +
-    //       ' to ' + this.books[this.current[0] - 1].title[0];
-    //   display.appendChild(header);
-
-    //   const subheader = document.createElement('h4');
-    //   subheader.innerHTML = text.title;
-    //   display.appendChild(subheader);
-
-    //   for (const paragraph of text.body) {
-    //     const paragraphElement = document.createElement('p');
-    //     paragraphElement.innerHTML = paragraph;
-    //     display.appendChild(paragraphElement);
-    //   }
-    //   return;
-    // }
-
-    // const currentPart = currentBook.getCurrentPart();
-    // if (currentPart instanceof Chapter) {
-    //   const header = document.createElement('h2');
-    //   header.innerText =
-    //       (currentPart == currentBook.exposition[0] ? 'Prologue' :
-    //       'Epilogue') + ' to ' + currentBook.title[0];
-    //   display.appendChild(header);
-
-    //   const subheader = document.createElement('h4');
-    //   subheader.innerHTML = currentPart.title;
-    //   display.appendChild(subheader);
-
-    //   for (const paragraph of currentPart.body) {
-    //     const paragraphElement = document.createElement('p');
-    //     paragraphElement.innerHTML = paragraph;
-    //     display.appendChild(paragraphElement);
-    //   }
-
-    //   if (direction && != Series.LENGTH)
-    //     this.currentBook++;
-    //   else if (this.currentBook != Series.LENGTH)
-    //     this.currentBook--;
-    //   return;
-    // }
-
-    // if (this.currentBook == -1) {
-    //   const title = document.createElement('div');
-    //   const header = document.createElement('h2');
-    //   header.innerText = 'The Surface Tension Trilogy';
-    //   title.appendChild(header);
-
-    //   const subheader = document.createElement('h4');
-    //   subheader.innerText = 'Heaven Torn Asunder';
-    //   title.appendChild(subheader);
-
-    //   const author = document.createElement('p');
-    //   author.innerText = 'Israfil Argos';
-    //   title.appendChild(author);
-
-    //   display.appendChild(title);
-    //   if (direction) this.currentBook++;
-    //   return;
-    // }
-
-    // if (this.currentBook == 0) {
-    //   const header = document.createElement('h2');
-    //   header.innerText = 'Prelude to the Surface Tension Trilogy';
-    //   display.appendChild(header);
-
-    //   const subheader = document.createElement('h4');
-    //   subheader.innerHTML = this.exposition[0].title;
-    //   display.appendChild(subheader);
-
-    //   for (const paragraph of this.exposition[0].body) {
-    //     const paragraphElement = document.createElement('p');
-    //     paragraphElement.innerHTML = paragraph;
-    //     display.appendChild(paragraphElement);
-    //   }
-
-    //   if (direction)
-    //     this.currentBook++;
-    //   else
-    //     this.currentBook--;
-    //   return;
-    // }
-
-    // if (this.currentBook == Series.LENGTH) {
-    //   if (!direction) this.currentBook--;
-    //   return;
-    // }
-
-    // const currentBook = this.getCurrentBook();
-    // if (Array.isArray(currentBook)) {
-    //   const header = document.createElement('h2');
-    //   header.innerText = 'Prelude to the Surface Tension Trilogy';
-    //   display.appendChild(header);
-
-    //   const subheader = document.createElement('h4');
-    //   subheader.innerHTML = 'Book ' + numberToText(this.currentBook + 1) +
-    //       ': ' + currentBook.title[0] + ' | Part ' +
-    //       numberToText(currentBook.currentPart + 1) + ': ' +
-    //       currentPart.title;
-    //   display.appendChild(subheader);
-    //   this.currentBook += bookJump;
-    //   this.books[this.currentBook].currentPart += partJump;
-    //   return;
-    // }
-
-    // const currentPart = currentBook.getCurrentPart();
-    // const currentChapter = currentPart.getCurrentChapter();
-
-    // const header = document.createElement('h2');
-    // header.innerText = 'Chapter ' +
-    //     numberToText(currentPart.currentChapter + 1) + ': ' +
-    //     currentChapter.title;
-    // display.appendChild(header);
-
-    // const subheader = document.createElement('h4');
-    // subheader.innerHTML = 'Book ' + numberToText(this.currentBook + 1) + ': '
-    // +
-    //     currentBook.title[0] + ' | Part ' +
-    //     numberToText(currentBook.currentPart + 1) + ': ' + currentPart.title;
-    // display.appendChild(subheader);
-
-    // for (const paragraph of currentChapter.body) {
-    //   const paragraphElement = document.createElement('p');
-    //   paragraphElement.innerHTML = paragraph;
-    //   display.appendChild(paragraphElement);
-    // }
   }
 }
 
@@ -558,6 +411,13 @@ window.onload = () => {
     if (e.key == 'ArrowLeft')
       Series.display(document.body.children.item(1), false);
     if (e.key == 'ArrowRight') Series.display(document.body.children.item(1));
+  });
+  document.addEventListener('touchstart', (e) => {
+    for (let i = 0; i < e.touches.length; i++)
+      if (e.touches.item(i).clientX >= window.innerWidth * 0.66) {
+        Series.display(document.body.children.item(1));
+      } else if (e.touches.item(i).clientX <= window.innerWidth * 0.33)
+        Series.display(document.body.children.item(1), false);
   });
   Series.load();
 }
