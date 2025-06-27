@@ -138,25 +138,34 @@ let chapters = [];
 window.onload = async () => {
   for (let i = 0; i < 5; i++) {
     if (i == 0 || i == 4) {
-      chapters.push(new Chapter(await loadFileText('https://github.com/israfiel-a/stt/blob/content/Series/' + i + '.md')));
+      loadFileText(
+          'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/' +
+          i + '.md')
+          .then((v) => {chapters.push(new Chapter(v))})
       continue;
     }
 
     for (let j = 0; j < 6; j++) {
       if (j == 0 || j == 5) {
-        chapters.push(
-            new Chapter(await loadFileText('https://github.com/israfiel-a/stt/blob/content/Series/' + i + '/' + j + '.md')));
+        loadFileText(
+            'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/' +
+            i + '/' + j + '.md')
+            .then((v) => chapters.push(new Chapter(v)));
         continue;
       }
 
       for (let k = 0; k < 17; k++) {
-        chapters.push(new Chapter(
-            await loadFileText('https://github.com/israfiel-a/stt/blob/content/Series/' + i + '/' + j + '/' + k + '.md')));
+        loadFileText(
+            'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/' +
+            i + '/' + j + '/' + k + '.md')
+            .then((v) => chapters.push(new Chapter(v)))
       }
     }
   }
 
   document.addEventListener('keyup', (e) => {
+    if (chapters.length < 5) return;
+
     if (e.key == 'ArrowLeft' && current > -1) {
       current--;
       chapters[current].display(document.body);
@@ -168,6 +177,8 @@ window.onload = async () => {
   });
 
   document.addEventListener('touchstart', (e) => {
+    if (chapters.length < 5) return;
+
     if (e.touches.item(0).clientX >= window.innerWidth * 0.75 &&
         current < LENGTH - 1) {
       current++;
