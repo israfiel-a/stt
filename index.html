@@ -366,12 +366,12 @@
                         return;
                     }
 
-                    if(current.part == 0) {
+                    if(current.part < 2) {
                         current.part++;
                         return;
                     }
 
-                    if(current.part == 5) {
+                    if(current.part == 6) {
                         current.part = 0;
                         current.book++;
                         return;
@@ -394,19 +394,19 @@
                     }
 
                     if(current.part == 0) {
-                        if(current.book != 2) current.part = 5;
+                        if(current.book != 2) current.part = 6;
                         current.book--;
                         return;
                     }
 
-                    if(current.part == 5) {
+                    if(current.part == 6) {
                         current.part--;
                         current.chapter = 16;
                         return;
                     }
 
                     if(current.chapter == 0) {
-                        if(current.part != 1) current.chapter = 16;
+                        if(current.part > 2) current.chapter = 16;
                         current.part--;
                         return;
                     }
@@ -432,7 +432,7 @@
                 const chapter = current.chapter;
 
                 const bookIndex = book + 1;
-                const partIndex = part > 0 ? part : 0;
+                const partIndex = part > 0 ? part + 1 : 1;
                 const chapterIndex = chapter > 0 ? chapter : 0;
                 fetch(getPath()).then(blob => blob.text().then(text => {
                     if(book == 0 || book == 4)
@@ -448,7 +448,7 @@
             }
 
             /**
-             * @typedef {[Chapter, Chapter[], Chapter[], Chapter[], Chapter[], Chapter]}
+             * @typedef {[Chapter, Chapter, Chapter[], Chapter[], Chapter[], Chapter[], Chapter]}
              * Book
              */
 
@@ -456,14 +456,12 @@
              * @type {[Chapter, Chapter, Book, Book, Book, Chapter]}
              */
             let chapters = [
-                new Chapter(
-                    'The Surface Tension Trilogy: The Heavens Torn Asunder\nIsrafil Argos',
-                    'title'),
-                null,                          // Prelude
-                [null, [], [], [], [], null],  // Bloodletter
-                [null, [], [], [], [], null],  // Chainbinder
-                [null, [], [], [], [], null],  // Godslayer
-                null,                          // Postlude
+                new Chapter('The Surface Tension Trilogy: The Heavens Torn Asunder\nIsrafil Argos', 'title'),
+                null,
+                [new Chapter('Bloodletter: The Last Return\nIsrafil Argos', 'title'), null, [], [], [], [], null],
+                [new Chapter('Chainbinder: The Road to Hell\nIsrafil Argos', 'title'), null, [], [], [], [], null],
+                [new Chapter('Godslayer: The Final Redemption\nIsrafil Argos', 'title'), null, [], [], [], [], null],
+                null,
             ];
 
             fetchText();
