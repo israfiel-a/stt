@@ -138,20 +138,20 @@ let chapters = [];
 window.onload = async () => {
   for (let i = 0; i < 5; i++) {
     if (i == 0 || i == 4) {
-      chapters.push(new Chapter(await loadFileText('./Series/' + i + '.md')));
+      chapters.push(new Chapter(await loadFileText('https://github.com/israfiel-a/stt/blob/content/Series/' + i + '.md')));
       continue;
     }
 
     for (let j = 0; j < 6; j++) {
       if (j == 0 || j == 5) {
         chapters.push(
-            new Chapter(await loadFileText('./Series/' + i + '/' + j + '.md')));
+            new Chapter(await loadFileText('https://github.com/israfiel-a/stt/blob/content/Series/' + i + '/' + j + '.md')));
         continue;
       }
 
       for (let k = 0; k < 17; k++) {
         chapters.push(new Chapter(
-            await loadFileText('./Series/' + i + '/' + j + '/' + k + '.md')));
+            await loadFileText('https://github.com/israfiel-a/stt/blob/content/Series/' + i + '/' + j + '/' + k + '.md')));
       }
     }
   }
