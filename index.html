@@ -389,73 +389,161 @@
 
             const LENGTH = (17 * 4 + 2) * 3 + 2;
 
-            let current = 0;
+            let current = {
+                book: 0,
+                part: 0,
+                chapter: 0,
+                display: (element) => {
+                    const book = chapters[current.book];
+                    if(book instanceof Chapter) { book.display(element); return; }
 
-            let currentBook = null;
+                    const part = book[current.part];
+                    if(part instanceof Chapter) { part.display(element); return; }
+
+                    part[current.chapter].display(element);
+                },
+                next: () => {
+                    if(current.book == 4) return;
+
+                    if(current.book < 2) {
+                        current.book++;
+                        return;
+                    }
+
+                    if(current.part == 0) {
+                        current.part++;
+                        return;
+                    }
+
+                    if(current.part == 5) {
+                        current.part = 0;
+                        current.book++;
+                        return;
+                    }
+
+                    if(current.chapter == 16) {
+                        current.chapter = 0;
+                        current.part++;
+                        return;
+                    }
+
+                    current.chapter++;
+                },
+                back: () => {
+                    if(current.book == 0) return;
+
+                    if(current.book < 2) {
+                        current.book--;
+                        return;
+                    }
+
+                    if(current.part == 0) {
+                        if(current.book != 2) current.part = 5;
+                        current.book--;
+                        return;
+                    }
+
+                    if(current.part == 5) {
+                        current.part--;
+                        return;
+                    }
+
+                    if(current.chapter == 0) {
+                        if(current.part != 1) current.chapter = 16;
+                        current.part--;
+                        return;
+                    }
+
+                    current.chapter--;
+                }
+            };
+
+
+            const source = 'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/';
+            function getPath() {
+                let path = source + current.book;
+                if(current.book != 0 && current.book != 4) path += "/" + current.part;
+                if(current.part != 0 && current.part != 5) path += "/" + current.chapter;
+                path += ".md";
+                return path;
+            }
+
+            function fetchText() {
+                const book = current.book;
+                const part = current.part;
+                const chapter = current.chapter;
+
+                const bookIndex = book + 1;
+                const partIndex = part > 0 ? part : 0;
+                const chapterIndex = chapter > 0 ? chapter : 0;
+                fetch(getPath()).then(blob => blob.text().then(text => {
+                    if(book == 0 || book == 4)
+                        chapters[bookIndex] = new Chapter(text, book == 0 ? "prelude" : "postlude");
+                    else if(part == 0 || part == 5)
+                        chapters[bookIndex][partIndex] = new Chapter(text, part == 0 ? "prologue" : "epilogue");
+                    else
+                        chapters[bookIndex][partIndex][chapterIndex] = new Chapter(text, chapter == 0 ? "part" : "normal");
+                }));
+            }
 
             /**
-             * @type {Chapter[]}
+             * @typedef {[Chapter, Chapter[], Chapter[], Chapter[], Chapter[], Chapter]} Book
              */
-            let chapters = [];
+
+            /**
+             * @type {[Chapter, Chapter, Book, Book, Book, Chapter]}
+             */
+            let chapters = [
+                new Chapter("The Surface Tension Trilogy: The Heavens Torn Asunder\nIsrafil Argos", "title"),
+                null, // Prelude
+                [null, [], [], [], [], null], // Bloodletter
+                [null, [], [], [], [], null], // Chainbinder
+                [null, [], [], [], [], null],        // Godslayer
+                null, // Postlude
+            ];
+
+            fetchText();
+            for(current.book = 1; current.book < 4; current.book++)
+                for(current.part = 0; current.part < 6; current.part++) {
+                    if(current.part == 0 || current.part == 5) {
+                        fetchText();
+                        continue;
+                    }
+                    for(current.chapter = 0; current.chapter < 17; current.chapter++)
+                        fetchText();
+                }
+
+            current.book = 4;
+            current.part = 0;
+            current.chapter = 0;
+            fetchText();
+            current.book = 0;
 
             window.onload = () => {
                 const display = document.getElementsByTagName("main").item(0).children.item(0);
 
-                chapters.push(new Chapter("The Surface Tension Trilogy: The Heavens Torn Asunder\nIsrafil Argos", "title"));
-                chapters[current].display(display);
-
-                for(let i = 0; i < 5; i++) {
-                    if(i == 0 || i == 4) {
-                        fetch(
-                            'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/' +
-                            i + '.md')
-                            .then(v => v.text().then(c => chapters.push(new Chapter(c, (i == 0 ? "prelude" : "postlude")))));
-                        continue;
-                    }
-
-                    for(let j = 0; j < 6; j++) {
-                        if(j == 0 || j == 5) {
-                            fetch(
-                                'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/' +
-                                i + '/' + j + '.md')
-                                .then(v => v.text().then(c => chapters.push(new Chapter(c, (j == 0 ? "prologue" : "epilogue")))));
-                            continue;
-                        }
-
-                        for(let k = 0; k < 17; k++) {
-                            fetch(
-                                'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/' +
-                                i + '/' + j + '/' + k + '.md')
-                                .then(v => v.text().then(c => chapters.push(new Chapter(c, (k == 0 ? "part" : "normal")))));
-                        }
-                    }
-                }
-
                 document.addEventListener('keyup', (e) => {
-                    if(chapters.length < 5) return;
-
-                    if(e.key == 'ArrowLeft' && current > 0) {
-                        current--;
-                        chapters[current].display(display);
+                    if(e.key == 'ArrowLeft') {
+                        current.back();
+                        current.display(display);
                     }
-                    if(e.key == 'ArrowRight' && current < LENGTH - 1) {
-                        current++;
-                        chapters[current].display(display);
+                    if(e.key == 'ArrowRight') {
+                        current.next();
+                        current.display(display);
                     }
                 });
 
                 document.addEventListener('touchstart', (e) => {
-                    if(chapters.length < 5) return;
-
-                    if(e.touches.item(0).clientX >= window.innerWidth * 0.75 &&
-                        current < LENGTH - 1) {
-                        current++;
-                        chapters[current].display(display);
+                    if(e.touches.item(0).clientX >= window.innerWidth * 0.75) {
+                        current.next();
+                        chapters[current.book][current.part][current.chapter].display(display);
                     } else if(
                         e.touches.item(0).clientX <= window.innerWidth * 0.25 && current > 0)
                         current--;
-                    chapters[current].display(display);
+                    chapters[current.book][current.part][current.chapter].display(display);
                 });
+
+                current.display(display);
             }
         </script>
         <main><div></div></main>
