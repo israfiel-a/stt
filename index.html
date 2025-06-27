@@ -73,64 +73,17 @@
         <script>
             'use strict';
 
+            const LENGTH = { SERIES: 5, BOOK: 6, PART: 17 };
+
+            const NUMBERS = [
+                'One', 'Two', 'Three', 'Four',
+                'Five', 'Six', 'Seven', 'Eight',
+                'Nine', 'Ten', 'Eleven', 'Twelve',
+                'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen'
+            ];
+
             function capitalize(string) {
                 return string.charAt(0).toUpperCase() + string.substring(1);
-            }
-
-            // credit https://stackoverflow.com/a/5530230/28813012
-            var ones = [
-                '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'
-            ];
-            var tens = [
-                '', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty',
-                'Ninety'
-            ];
-            var teens = [
-                'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
-                'Seventeen', 'Eighteen', 'Nineteen'
-            ];
-
-            function convert_millions(num) {
-                if(num >= 1000000) {
-                    return convert_millions(Math.floor(num / 1000000)) + ' Million ' +
-                        convert_thousands(num % 1000000);
-                } else {
-                    return convert_thousands(num);
-                }
-            }
-
-            function convert_thousands(num) {
-                if(num >= 1000) {
-                    return convert_hundreds(Math.floor(num / 1000)) + ' Thousand ' +
-                        convert_hundreds(num % 1000);
-                } else {
-                    return convert_hundreds(num);
-                }
-            }
-
-            function convert_hundreds(num) {
-                if(num > 99) {
-                    return ones[Math.floor(num / 100)] + ' Hundred ' + convert_tens(num % 100);
-                } else {
-                    return convert_tens(num);
-                }
-            }
-
-            function convert_tens(num) {
-                if(num < 10)
-                    return ones[num];
-                else if(num >= 10 && num < 20)
-                    return teens[num - 10];
-                else {
-                    return tens[Math.floor(num / 10)] + ' ' + ones[num % 10];
-                }
-            }
-
-            function numberToText(num) {
-                if(num == 0)
-                    return 'Zero';
-                else
-                    return convert_millions(num);
             }
 
             class Chapter {
@@ -147,32 +100,25 @@
                  */
                 wordCount;
                 /**
-                 * @type {"title" | "normal" | "prelude" | "postlude" | "prologue" | "epilogue" | "part"}
+                 * @type {"title" | "normal" | "prelude" | "postlude" | "prologue" |
+                 *     "epilogue" | "part"}
                  */
                 type;
-                id;
-
-                static #part = 1;
-                static #chapter = 1;
+                index;
 
                 /**
                  *
                  * @param {string} contents
-                 * @param {"title" | "normal" | "prelude" | "postlude" | "prologue" | "epilogue" | "part"} type
+                 * @param {"title" | "normal" | "prelude" | "postlude" | "prologue" |
+                 *     "epilogue" | "part"} type
                  */
-                constructor(contents, type = "normal") {
+                constructor(contents, type = 'normal', index = 0) {
                     this.body = contents.split('\n').filter((v) => v != '\n' && v != '');
                     this.title = this.body.splice(0, 1)[0];
                     this.wordCount = 0;
                     this.type = type;
 
-                    if(type == "normal") {
-                        this.id = numberToText(Chapter.#chapter);
-                        if(++Chapter.#chapter > 16) Chapter.#chapter = 1;
-                    } else if(type == "part") {
-                        this.id = numberToText(Chapter.#part);
-                        if(++Chapter.#part > 4) Chapter.#part = 1;
-                    }
+                    if(type == 'normal' || type == 'part') this.index = NUMBERS[index];
 
                     for(let i = 0; i < this.body.length; i++) {
                         const paragraph = this.body[i];
@@ -182,7 +128,10 @@
                         let digestedParagraph = '';
                         for(const letter of paragraph) {
                             switch(letter) {
-                                case ' ': this.wordCount++; digestedParagraph += letter; break;
+                                case ' ':
+                                    this.wordCount++;
+                                    digestedParagraph += letter;
+                                    break;
                                 case '_':
                                     if(!italic)
                                         digestedParagraph += '<i>';
@@ -209,35 +158,35 @@
                  */
                 display(element) {
                     element.innerHTML = '';
-                    element.style.height = "initial";
-                    element.style.display = "initial";
-                    element.style.flexDirection = "initial";
-                    element.style.justifyContent = "initial";
-                    element.style.alignItems = "initial";
+                    element.style.height = 'initial';
+                    element.style.display = 'initial';
+                    element.style.flexDirection = 'initial';
+                    element.style.justifyContent = 'initial';
+                    element.style.alignItems = 'initial';
 
                     switch(this.type) {
-                        case "normal": {
+                        case 'normal': {
                             let header = document.createElement('h3');
-                            header.innerHTML = "Chapter " + this.id;
+                            header.innerHTML = 'Chapter ' + this.index;
                             element.appendChild(header);
 
                             if(this.title == undefined) {
                                 let elem = document.createElement('p');
-                                elem.innerHTML = "Yet to be written.";
-                                elem.style.fontWeight = "normal";
-                                elem.style.fontStyle = "italic";
+                                elem.innerHTML = 'Yet to be written.';
+                                elem.style.fontWeight = 'normal';
+                                elem.style.fontStyle = 'italic';
                                 element.appendChild(elem);
                                 return;
                             }
 
                             let subheader = document.createElement('h5');
                             subheader.innerHTML = this.title;
-                            subheader.style.fontWeight = "normal";
-                            subheader.style.fontStyle = "italic";
+                            subheader.style.fontWeight = 'normal';
+                            subheader.style.fontStyle = 'italic';
                             element.appendChild(subheader);
 
                             let wordCount = document.createElement('h5');
-                            wordCount.innerHTML = this.wordCount + " words";
+                            wordCount.innerHTML = this.wordCount + ' words';
                             element.appendChild(wordCount);
 
                             for(const paragraph of this.body) {
@@ -247,56 +196,58 @@
                             }
                             break;
                         }
-                        case "title": {
-                            const titles = this.title.split(":");
+                        case 'title': {
+                            const titles = this.title.split(':');
                             let header = document.createElement('h2');
                             header.innerHTML = titles[0];
-                            header.style.textAlign = "center";
+                            header.style.textAlign = 'center';
                             element.appendChild(header);
 
                             let subheader = document.createElement('h4');
                             subheader.innerHTML = titles[1];
-                            subheader.style.textAlign = "center";
-                            subheader.style.fontWeight = "normal";
-                            subheader.style.letterSpacing = "0.2em";
+                            subheader.style.textAlign = 'center';
+                            subheader.style.fontWeight = 'normal';
+                            subheader.style.letterSpacing = '0.2em';
                             element.appendChild(subheader);
 
                             let author = document.createElement('h5');
                             author.innerHTML = this.body[0];
-                            author.style.textAlign = "center";
-                            author.style.fontWeight = "normal";
-                            author.style.fontStyle = "italic";
+                            author.style.textAlign = 'center';
+                            author.style.fontWeight = 'normal';
+                            author.style.fontStyle = 'italic';
                             element.appendChild(author);
 
-                            element.style.height = "94vh";
-                            element.style.display = "flex";
-                            element.style.flexDirection = "column";
-                            element.style.justifyContent = "center";
-                            element.style.alignItems = "center";
+                            element.style.height = '94vh';
+                            element.style.display = 'flex';
+                            element.style.flexDirection = 'column';
+                            element.style.justifyContent = 'center';
+                            element.style.alignItems = 'center';
                             break;
                         }
-                        case "prelude": case "postlude": {
+                        case 'prelude':
+                        case 'postlude': {
                             let header = document.createElement('h3');
-                            header.innerHTML = capitalize(this.type) + " to the Surface Tension Trilogy";
+                            header.innerHTML =
+                                capitalize(this.type) + ' to the Surface Tension Trilogy';
                             element.appendChild(header);
 
                             if(this.title == undefined) {
                                 let elem = document.createElement('p');
-                                elem.innerHTML = "Yet to be written.";
-                                elem.style.fontWeight = "normal";
-                                elem.style.fontStyle = "italic";
+                                elem.innerHTML = 'Yet to be written.';
+                                elem.style.fontWeight = 'normal';
+                                elem.style.fontStyle = 'italic';
                                 element.appendChild(elem);
                                 return;
                             }
 
                             let subheader = document.createElement('h5');
                             subheader.innerHTML = this.title;
-                            subheader.style.fontWeight = "normal";
-                            subheader.style.fontStyle = "italic";
+                            subheader.style.fontWeight = 'normal';
+                            subheader.style.fontStyle = 'italic';
                             element.appendChild(subheader);
 
                             let wordCount = document.createElement('h5');
-                            wordCount.innerHTML = this.wordCount + " words";
+                            wordCount.innerHTML = this.wordCount + ' words';
                             element.appendChild(wordCount);
 
                             for(const paragraph of this.body) {
@@ -306,29 +257,30 @@
                             }
                             break;
                         }
-                        case "prologue": case "epilogue": {
-                            const titles = this.title.split(": ");
+                        case 'prologue':
+                        case 'epilogue': {
+                            const titles = this.title.split(': ');
                             let header = document.createElement('h3');
-                            header.innerHTML = capitalize(this.type) + " to " + titles[0];
+                            header.innerHTML = capitalize(this.type) + ' to ' + titles[0];
                             element.appendChild(header);
 
-                            if(titles[1] == "") {
+                            if(titles[1] == '') {
                                 let elem = document.createElement('h5');
-                                elem.innerHTML = "Yet to be written.";
-                                elem.style.fontWeight = "normal";
-                                elem.style.fontStyle = "italic";
+                                elem.innerHTML = 'Yet to be written.';
+                                elem.style.fontWeight = 'normal';
+                                elem.style.fontStyle = 'italic';
                                 element.appendChild(elem);
                                 return;
                             }
 
                             let subheader = document.createElement('h5');
                             subheader.innerHTML = titles[1];
-                            subheader.style.fontWeight = "normal";
-                            subheader.style.fontStyle = "italic";
+                            subheader.style.fontWeight = 'normal';
+                            subheader.style.fontStyle = 'italic';
                             element.appendChild(subheader);
 
                             let wordCount = document.createElement('h5');
-                            wordCount.innerHTML = this.wordCount + " words";
+                            wordCount.innerHTML = this.wordCount + ' words';
                             element.appendChild(wordCount);
 
                             for(const paragraph of this.body) {
@@ -338,56 +290,54 @@
                             }
                             break;
                         }
-                        case "part": {
+                        case 'part': {
                             let header = document.createElement('h2');
-                            header.innerHTML = "Part " + this.id;
-                            header.style.textAlign = "center";
+                            header.innerHTML = 'Part ' + this.index;
+                            header.style.textAlign = 'center';
                             element.appendChild(header);
 
                             if(this.title == undefined) {
                                 let elem = document.createElement('p');
-                                elem.innerHTML = "Yet to be written.";
-                                elem.style.fontWeight = "normal";
-                                elem.style.fontStyle = "italic";
-                                elem.style.textIndent = "0";
+                                elem.innerHTML = 'Yet to be written.';
+                                elem.style.fontWeight = 'normal';
+                                elem.style.fontStyle = 'italic';
+                                elem.style.textIndent = '0';
                                 element.appendChild(elem);
 
-                                element.style.height = "94vh";
-                                element.style.display = "flex";
-                                element.style.flexDirection = "column";
-                                element.style.justifyContent = "center";
-                                element.style.alignItems = "center";
+                                element.style.height = '94vh';
+                                element.style.display = 'flex';
+                                element.style.flexDirection = 'column';
+                                element.style.justifyContent = 'center';
+                                element.style.alignItems = 'center';
                                 return;
                             }
 
                             let subheader = document.createElement('h4');
                             subheader.innerHTML = this.title;
-                            subheader.style.textAlign = "center";
-                            subheader.style.fontWeight = "normal";
-                            subheader.style.letterSpacing = "0.2em";
+                            subheader.style.textAlign = 'center';
+                            subheader.style.fontWeight = 'normal';
+                            subheader.style.letterSpacing = '0.2em';
                             element.appendChild(subheader);
 
                             let quote = document.createElement('h5');
                             quote.innerHTML = this.body[0];
-                            quote.style.textAlign = "center";
-                            quote.style.fontWeight = "normal";
-                            quote.style.fontStyle = "italic";
-                            quote.style.width = "75%";
-                            quote.style.marginTop = "2%";
+                            quote.style.textAlign = 'center';
+                            quote.style.fontWeight = 'normal';
+                            quote.style.fontStyle = 'italic';
+                            quote.style.width = '75%';
+                            quote.style.marginTop = '2%';
                             element.appendChild(quote);
 
-                            element.style.height = "94vh";
-                            element.style.display = "flex";
-                            element.style.flexDirection = "column";
-                            element.style.justifyContent = "center";
-                            element.style.alignItems = "center";
+                            element.style.height = '94vh';
+                            element.style.display = 'flex';
+                            element.style.flexDirection = 'column';
+                            element.style.justifyContent = 'center';
+                            element.style.alignItems = 'center';
                             break;
                         }
                     }
                 }
             }
-
-            const LENGTH = (17 * 4 + 2) * 3 + 2;
 
             let current = {
                 book: 0,
@@ -395,10 +345,16 @@
                 chapter: 0,
                 display: (element) => {
                     const book = chapters[current.book];
-                    if(book instanceof Chapter) { book.display(element); return; }
+                    if(book instanceof Chapter) {
+                        book.display(element);
+                        return;
+                    }
 
                     const part = book[current.part];
-                    if(part instanceof Chapter) { part.display(element); return; }
+                    if(part instanceof Chapter) {
+                        part.display(element);
+                        return;
+                    }
 
                     part[current.chapter].display(element);
                 },
@@ -445,6 +401,7 @@
 
                     if(current.part == 5) {
                         current.part--;
+                        current.chapter = 16;
                         return;
                     }
 
@@ -459,12 +416,13 @@
             };
 
 
-            const source = 'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/';
+            const source =
+                'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/';
             function getPath() {
                 let path = source + current.book;
-                if(current.book != 0 && current.book != 4) path += "/" + current.part;
-                if(current.part != 0 && current.part != 5) path += "/" + current.chapter;
-                path += ".md";
+                if(current.book != 0 && current.book != 4) path += '/' + current.part;
+                if(current.part != 0 && current.part != 5) path += '/' + current.chapter;
+                path += '.md';
                 return path;
             }
 
@@ -478,28 +436,34 @@
                 const chapterIndex = chapter > 0 ? chapter : 0;
                 fetch(getPath()).then(blob => blob.text().then(text => {
                     if(book == 0 || book == 4)
-                        chapters[bookIndex] = new Chapter(text, book == 0 ? "prelude" : "postlude");
+                        chapters[bookIndex] =
+                            new Chapter(text, book == 0 ? 'prelude' : 'postlude');
                     else if(part == 0 || part == 5)
-                        chapters[bookIndex][partIndex] = new Chapter(text, part == 0 ? "prologue" : "epilogue");
+                        chapters[bookIndex][partIndex] =
+                            new Chapter(text, part == 0 ? 'prologue' : 'epilogue');
                     else
-                        chapters[bookIndex][partIndex][chapterIndex] = new Chapter(text, chapter == 0 ? "part" : "normal");
+                        chapters[bookIndex][partIndex][chapterIndex] =
+                            new Chapter(text, chapter == 0 ? 'part' : 'normal', chapter == 0 ? part - 1 : chapter - 1);
                 }));
             }
 
             /**
-             * @typedef {[Chapter, Chapter[], Chapter[], Chapter[], Chapter[], Chapter]} Book
+             * @typedef {[Chapter, Chapter[], Chapter[], Chapter[], Chapter[], Chapter]}
+             * Book
              */
 
             /**
              * @type {[Chapter, Chapter, Book, Book, Book, Chapter]}
              */
             let chapters = [
-                new Chapter("The Surface Tension Trilogy: The Heavens Torn Asunder\nIsrafil Argos", "title"),
-                null, // Prelude
-                [null, [], [], [], [], null], // Bloodletter
-                [null, [], [], [], [], null], // Chainbinder
-                [null, [], [], [], [], null],        // Godslayer
-                null, // Postlude
+                new Chapter(
+                    'The Surface Tension Trilogy: The Heavens Torn Asunder\nIsrafil Argos',
+                    'title'),
+                null,                          // Prelude
+                [null, [], [], [], [], null],  // Bloodletter
+                [null, [], [], [], [], null],  // Chainbinder
+                [null, [], [], [], [], null],  // Godslayer
+                null,                          // Postlude
             ];
 
             fetchText();
@@ -520,7 +484,8 @@
             current.book = 0;
 
             window.onload = () => {
-                const display = document.getElementsByTagName("main").item(0).children.item(0);
+                const display =
+                    document.getElementsByTagName('main').item(0).children.item(0);
 
                 document.addEventListener('keyup', (e) => {
                     if(e.key == 'ArrowLeft') {
