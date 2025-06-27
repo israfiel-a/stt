@@ -1,15 +1,463 @@
+<!-- 
+    ------------------------------------------------------------------------------------------
+    This file contains all code written to display the Surface Tension Trilogy book series.
+    The series content can be found on the "content" branch of the "israfiel-a/stt" repository
+    on Github.
+    ------------------------------------------------------------------------------------------
+    Copyright (c) 2025 Israfil Argos
+    This source code is under the GPLv3. You may use this program however you wish under
+    the terms of this license, found at <https://www.gnu.org/licenses/gpl-3.0.txt>.
+    ------------------------------------------------------------------------------------------
+-->
 <!DOCTYPE html>
 <html lang="en-US">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="color-scheme" content="dark light">
-
-        <link rel="stylesheet" href="./index.css">
-        <script src="./index.js"></script>
-
         <title>Surface Tension Trilogy</title>
     </head>
     <body>
+        <style>
+            body {
+                width: 60vw;
+                height: 97vh;
+                padding-left: 20vw;
+                padding-right: 20vw;
+                padding-top: 3vh;
+                margin: 0;
+                line-height: 1.55em;
+
+                main {
+                    width: 100%;
+                    height: 100%;
+                    
+                    div {
+                        width: 100%;
+                        height: fit-content;
+                        padding-bottom: 3vh;
+                    }
+                }
+
+                p,
+                h1,
+                h2,
+                h3,
+                h4,
+                h5 {
+                    margin: 0;
+                    padding: 0;
+                    user-select: none;
+                }
+
+                p,
+                i {
+                    font-size: small;
+                }
+
+                p {
+                    margin-bottom: 1.5%;
+                    text-indent: 2%;
+
+                    &:last-of-type {
+                        margin-bottom: 0%;
+                    }
+
+                    &:first-of-type {
+                        margin-top: 1%;
+                    }
+                }
+                
+            }
+        </style>
+        <script>
+            'use strict';
+
+            function capitalize(string) {
+                return string.charAt(0).toUpperCase() + string.substring(1);
+            }
+
+            // credit https://stackoverflow.com/a/5530230/28813012
+            var ones = [
+                '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'
+            ];
+            var tens = [
+                '', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty',
+                'Ninety'
+            ];
+            var teens = [
+                'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+                'Seventeen', 'Eighteen', 'Nineteen'
+            ];
+
+            function convert_millions(num) {
+                if(num >= 1000000) {
+                    return convert_millions(Math.floor(num / 1000000)) + ' Million ' +
+                        convert_thousands(num % 1000000);
+                } else {
+                    return convert_thousands(num);
+                }
+            }
+
+            function convert_thousands(num) {
+                if(num >= 1000) {
+                    return convert_hundreds(Math.floor(num / 1000)) + ' Thousand ' +
+                        convert_hundreds(num % 1000);
+                } else {
+                    return convert_hundreds(num);
+                }
+            }
+
+            function convert_hundreds(num) {
+                if(num > 99) {
+                    return ones[Math.floor(num / 100)] + ' Hundred ' + convert_tens(num % 100);
+                } else {
+                    return convert_tens(num);
+                }
+            }
+
+            function convert_tens(num) {
+                if(num < 10)
+                    return ones[num];
+                else if(num >= 10 && num < 20)
+                    return teens[num - 10];
+                else {
+                    return tens[Math.floor(num / 10)] + ' ' + ones[num % 10];
+                }
+            }
+
+            function numberToText(num) {
+                if(num == 0)
+                    return 'Zero';
+                else
+                    return convert_millions(num);
+            }
+
+            class Chapter {
+                /**
+                 * @type {string}
+                 */
+                title;
+                /**
+                 * @type {string[]}
+                 */
+                body;
+                /**
+                 * @type {number}
+                 */
+                wordCount;
+                /**
+                 * @type {"title" | "normal" | "prelude" | "postlude" | "prologue" | "epilogue" | "part"}
+                 */
+                type;
+                id;
+
+                static #part = 1;
+                static #chapter = 1;
+
+                /**
+                 *
+                 * @param {string} contents
+                 * @param {"title" | "normal" | "prelude" | "postlude" | "prologue" | "epilogue" | "part"} type
+                 */
+                constructor(contents, type = "normal") {
+                    this.body = contents.split('\n').filter((v) => v != '\n' && v != '');
+                    this.title = this.body.splice(0, 1)[0];
+                    this.wordCount = 0;
+                    this.type = type;
+
+                    if(type == "normal") {
+                        this.id = numberToText(Chapter.#chapter);
+                        if(++Chapter.#chapter > 16) Chapter.#chapter = 1;
+                    } else if(type == "part") {
+                        this.id = numberToText(Chapter.#part);
+                        if(++Chapter.#part > 4) Chapter.#part = 1;
+                    }
+
+                    for(let i = 0; i < this.body.length; i++) {
+                        const paragraph = this.body[i];
+
+                        let italic = false;
+
+                        let digestedParagraph = '';
+                        for(const letter of paragraph) {
+                            switch(letter) {
+                                case ' ': this.wordCount++; digestedParagraph += letter; break;
+                                case '_':
+                                    if(!italic)
+                                        digestedParagraph += '<i>';
+                                    else
+                                        digestedParagraph += '</i>';
+                                    italic = !italic;
+                                    break;
+                                case '+':
+                                    digestedParagraph +=
+                                        '<p align="center" style="font-size: x-large;">···</p>';
+                                    break;
+                                default:
+                                    digestedParagraph += letter;
+                            }
+                        }
+                        this.wordCount++;
+                        this.body[i] = digestedParagraph;
+                    }
+                }
+
+                /**
+                 *
+                 * @param {HTMLElement} element
+                 */
+                display(element) {
+                    element.innerHTML = '';
+                    element.style.height = "initial";
+                    element.style.display = "initial";
+                    element.style.flexDirection = "initial";
+                    element.style.justifyContent = "initial";
+                    element.style.alignItems = "initial";
+
+                    switch(this.type) {
+                        case "normal": {
+                            let header = document.createElement('h3');
+                            header.innerHTML = "Chapter " + this.id;
+                            element.appendChild(header);
+
+                            if(this.title == undefined) {
+                                let elem = document.createElement('p');
+                                elem.innerHTML = "Yet to be written.";
+                                elem.style.fontWeight = "normal";
+                                elem.style.fontStyle = "italic";
+                                element.appendChild(elem);
+                                return;
+                            }
+
+                            let subheader = document.createElement('h5');
+                            subheader.innerHTML = this.title;
+                            subheader.style.fontWeight = "normal";
+                            subheader.style.fontStyle = "italic";
+                            element.appendChild(subheader);
+
+                            let wordCount = document.createElement('h5');
+                            wordCount.innerHTML = this.wordCount + " words";
+                            element.appendChild(wordCount);
+
+                            for(const paragraph of this.body) {
+                                let elem = document.createElement('p');
+                                elem.innerHTML = paragraph;
+                                element.appendChild(elem);
+                            }
+                            break;
+                        }
+                        case "title": {
+                            const titles = this.title.split(":");
+                            let header = document.createElement('h2');
+                            header.innerHTML = titles[0];
+                            header.style.textAlign = "center";
+                            element.appendChild(header);
+
+                            let subheader = document.createElement('h4');
+                            subheader.innerHTML = titles[1];
+                            subheader.style.textAlign = "center";
+                            subheader.style.fontWeight = "normal";
+                            subheader.style.letterSpacing = "0.2em";
+                            element.appendChild(subheader);
+
+                            let author = document.createElement('h5');
+                            author.innerHTML = this.body[0];
+                            author.style.textAlign = "center";
+                            author.style.fontWeight = "normal";
+                            author.style.fontStyle = "italic";
+                            element.appendChild(author);
+
+                            element.style.height = "94vh";
+                            element.style.display = "flex";
+                            element.style.flexDirection = "column";
+                            element.style.justifyContent = "center";
+                            element.style.alignItems = "center";
+                            break;
+                        }
+                        case "prelude": case "postlude": {
+                            let header = document.createElement('h3');
+                            header.innerHTML = capitalize(this.type) + " to the Surface Tension Trilogy";
+                            element.appendChild(header);
+
+                            if(this.title == undefined) {
+                                let elem = document.createElement('p');
+                                elem.innerHTML = "Yet to be written.";
+                                elem.style.fontWeight = "normal";
+                                elem.style.fontStyle = "italic";
+                                element.appendChild(elem);
+                                return;
+                            }
+
+                            let subheader = document.createElement('h5');
+                            subheader.innerHTML = this.title;
+                            subheader.style.fontWeight = "normal";
+                            subheader.style.fontStyle = "italic";
+                            element.appendChild(subheader);
+
+                            let wordCount = document.createElement('h5');
+                            wordCount.innerHTML = this.wordCount + " words";
+                            element.appendChild(wordCount);
+
+                            for(const paragraph of this.body) {
+                                let elem = document.createElement('p');
+                                elem.innerHTML = paragraph;
+                                element.appendChild(elem);
+                            }
+                            break;
+                        }
+                        case "prologue": case "epilogue": {
+                            const titles = this.title.split(": ");
+                            let header = document.createElement('h3');
+                            header.innerHTML = capitalize(this.type) + " to " + titles[0];
+                            element.appendChild(header);
+
+                            if(titles[1] == "") {
+                                let elem = document.createElement('h5');
+                                elem.innerHTML = "Yet to be written.";
+                                elem.style.fontWeight = "normal";
+                                elem.style.fontStyle = "italic";
+                                element.appendChild(elem);
+                                return;
+                            }
+
+                            let subheader = document.createElement('h5');
+                            subheader.innerHTML = titles[1];
+                            subheader.style.fontWeight = "normal";
+                            subheader.style.fontStyle = "italic";
+                            element.appendChild(subheader);
+
+                            let wordCount = document.createElement('h5');
+                            wordCount.innerHTML = this.wordCount + " words";
+                            element.appendChild(wordCount);
+
+                            for(const paragraph of this.body) {
+                                let elem = document.createElement('p');
+                                elem.innerHTML = paragraph;
+                                element.appendChild(elem);
+                            }
+                            break;
+                        }
+                        case "part": {
+                            let header = document.createElement('h2');
+                            header.innerHTML = "Part " + this.id;
+                            header.style.textAlign = "center";
+                            element.appendChild(header);
+
+                            if(this.title == undefined) {
+                                let elem = document.createElement('p');
+                                elem.innerHTML = "Yet to be written.";
+                                elem.style.fontWeight = "normal";
+                                elem.style.fontStyle = "italic";
+                                elem.style.textIndent = "0";
+                                element.appendChild(elem);
+
+                                element.style.height = "94vh";
+                                element.style.display = "flex";
+                                element.style.flexDirection = "column";
+                                element.style.justifyContent = "center";
+                                element.style.alignItems = "center";
+                                return;
+                            }
+
+                            let subheader = document.createElement('h4');
+                            subheader.innerHTML = this.title;
+                            subheader.style.textAlign = "center";
+                            subheader.style.fontWeight = "normal";
+                            subheader.style.letterSpacing = "0.2em";
+                            element.appendChild(subheader);
+
+                            let quote = document.createElement('h5');
+                            quote.innerHTML = this.body[0];
+                            quote.style.textAlign = "center";
+                            quote.style.fontWeight = "normal";
+                            quote.style.fontStyle = "italic";
+                            quote.style.width = "75%";
+                            quote.style.marginTop = "2%";
+                            element.appendChild(quote);
+
+                            element.style.height = "94vh";
+                            element.style.display = "flex";
+                            element.style.flexDirection = "column";
+                            element.style.justifyContent = "center";
+                            element.style.alignItems = "center";
+                            break;
+                        }
+                    }
+                }
+            }
+
+            const LENGTH = (17 * 4 + 2) * 3 + 2;
+
+            let current = 0;
+
+            let currentBook = null;
+
+            /**
+             * @type {Chapter[]}
+             */
+            let chapters = [];
+
+            window.onload = () => {
+                const display = document.getElementsByTagName("main").item(0).children.item(0);
+
+                chapters.push(new Chapter("The Surface Tension Trilogy: The Heavens Torn Asunder\nIsrafil Argos", "title"));
+                chapters[current].display(display);
+
+                for(let i = 0; i < 5; i++) {
+                    if(i == 0 || i == 4) {
+                        fetch(
+                            'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/' +
+                            i + '.md')
+                            .then(v => v.text().then(c => chapters.push(new Chapter(c, (i == 0 ? "prelude" : "postlude")))));
+                        continue;
+                    }
+
+                    for(let j = 0; j < 6; j++) {
+                        if(j == 0 || j == 5) {
+                            fetch(
+                                'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/' +
+                                i + '/' + j + '.md')
+                                .then(v => v.text().then(c => chapters.push(new Chapter(c, (j == 0 ? "prologue" : "epilogue")))));
+                            continue;
+                        }
+
+                        for(let k = 0; k < 17; k++) {
+                            fetch(
+                                'https://raw.githubusercontent.com/israfiel-a/stt/content/Series/' +
+                                i + '/' + j + '/' + k + '.md')
+                                .then(v => v.text().then(c => chapters.push(new Chapter(c, (k == 0 ? "part" : "normal")))));
+                        }
+                    }
+                }
+
+                document.addEventListener('keyup', (e) => {
+                    if(chapters.length < 5) return;
+
+                    if(e.key == 'ArrowLeft' && current > 0) {
+                        current--;
+                        chapters[current].display(display);
+                    }
+                    if(e.key == 'ArrowRight' && current < LENGTH - 1) {
+                        current++;
+                        chapters[current].display(display);
+                    }
+                });
+
+                document.addEventListener('touchstart', (e) => {
+                    if(chapters.length < 5) return;
+
+                    if(e.touches.item(0).clientX >= window.innerWidth * 0.75 &&
+                        current < LENGTH - 1) {
+                        current++;
+                        chapters[current].display(display);
+                    } else if(
+                        e.touches.item(0).clientX <= window.innerWidth * 0.25 && current > 0)
+                        current--;
+                    chapters[current].display(display);
+                });
+            }
+        </script>
+        <main><div></div></main>
     </body>
 </html>
