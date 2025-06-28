@@ -73,7 +73,7 @@
         <script>
             'use strict';
 
-            const LENGTH = { SERIES: 5, BOOK: 6, PART: 17 };
+            const LENGTH = { SERIES: 4, BOOK: 6, PART: 16 };
 
             const NUMBERS = [
                 'One', 'Two', 'Three', 'Four',
@@ -359,7 +359,7 @@
                     part[current.chapter].display(element);
                 },
                 next: () => {
-                    if(current.book == 4) return;
+                    if(current.book == LENGTH.SERIES + 1) return;
 
                     if(current.book < 2) {
                         current.book++;
@@ -371,13 +371,13 @@
                         return;
                     }
 
-                    if(current.part == 6) {
+                    if(current.part == LENGTH.BOOK) {
                         current.part = 0;
                         current.book++;
                         return;
                     }
 
-                    if(current.chapter == 16) {
+                    if(current.chapter == LENGTH.PART) {
                         current.chapter = 0;
                         current.part++;
                         return;
@@ -394,19 +394,19 @@
                     }
 
                     if(current.part == 0) {
-                        if(current.book != 2) current.part = 6;
+                        if(current.book != 2) current.part = LENGTH.BOOK;
                         current.book--;
                         return;
                     }
 
-                    if(current.part == 6) {
+                    if(current.part == LENGTH.BOOK) {
                         current.part--;
-                        current.chapter = 16;
+                        current.chapter = LENGTH.PART;
                         return;
                     }
 
                     if(current.chapter == 0) {
-                        if(current.part > 2) current.chapter = 16;
+                        if(current.part > 2) current.chapter = LENGTH.PART;
                         current.part--;
                         return;
                     }
@@ -435,10 +435,10 @@
                 const partIndex = part > 0 ? part + 1 : 1;
                 const chapterIndex = chapter > 0 ? chapter : 0;
                 fetch(getPath()).then(blob => blob.text().then(text => {
-                    if(book == 0 || book == 4)
+                    if(book == 0 || book == LENGTH.SERIES)
                         chapters[bookIndex] =
                             new Chapter(text, book == 0 ? 'prelude' : 'postlude');
-                    else if(part == 0 || part == 5)
+                    else if(part == 0 || part == LENGTH.BOOK - 1)
                         chapters[bookIndex][partIndex] =
                             new Chapter(text, part == 0 ? 'prologue' : 'epilogue');
                     else
@@ -465,17 +465,17 @@
             ];
 
             fetchText();
-            for(current.book = 1; current.book < 4; current.book++)
-                for(current.part = 0; current.part < 6; current.part++) {
-                    if(current.part == 0 || current.part == 5) {
+            for(current.book = 1; current.book < LENGTH.SERIES; current.book++)
+                for(current.part = 0; current.part < LENGTH.BOOK; current.part++) {
+                    if(current.part == 0 || current.part == LENGTH.BOOK - 1) {
                         fetchText();
                         continue;
                     }
-                    for(current.chapter = 0; current.chapter < 17; current.chapter++)
+                    for(current.chapter = 0; current.chapter < LENGTH.PART + 1; current.chapter++)
                         fetchText();
                 }
 
-            current.book = 4;
+            current.book = LENGTH.SERIES;
             current.part = 0;
             current.chapter = 0;
             fetchText();
