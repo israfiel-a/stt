@@ -1,7 +1,7 @@
 <hr />
 
-### The Surface Tension Trilogy
-#### Heaven Torn Asunder
+<h3 align="center">The Surface Tension Trilogy</h3>
+<h4 align="center">The Heavens Torn Asunder</h4>
 This series follows the story of a slave boy, Cassiel, as he discovers more about the world he lives in than he could have ever imagined.
 
 <hr />
