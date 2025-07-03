@@ -32,7 +32,7 @@ A sort of "family tree" is listed below, starting from Ashantin and continuing.
                 - Adriel:
             - Konah:
                 - Akhan:
-                - Thiyan:
+                - Thiyan: middling height, very dark skin
                 - Iaoth:
                 - Izrail:
                 - Sorath:
@@ -41,7 +41,7 @@ A sort of "family tree" is listed below, starting from Ashantin and continuing.
             - Dismael:
             - Abbas:
         - Lekan:
-        - Miel:
+        - Miel: died in the first conflict against the Deepest Ones
     - Ibrahin: The largest physically among the Deepest Ones, though this is a voluntarily kept title due to all conscious pieces of Divinity being able to change into whatever shape they wish. He is manifest as a huge black snake, with eyes that glow bright green. He was direly wounded by the Serpentslayer, a fourth-generation pieces of Divinity.
     - Asmael: Usually manifest as a half-fish-half-man figure, Asmael typically takes the role of advisor amongst the Deepest Ones.
     - Tisrei: Usually manifest as a nondescript but large fish, Tisrei is arguably the greatest shapeshifter amongst the whole of Divinity; while it often takes extreme effort for others, he is able to do it in a fluid motion. 
